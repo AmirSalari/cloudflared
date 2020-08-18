@@ -11,6 +11,8 @@ require (
 	github.com/aws/aws-sdk-go v1.25.8
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
+	github.com/chris-wood/odoh v0.0.0-20200713191747-dca7f5ffc0b3
+	github.com/cisco/go-hpke v0.0.0-20200710171132-37d332d5f613
 	github.com/cloudflare/brotli-go v0.0.0-20191101163834-d34379f7ff93
 	github.com/cloudflare/cfssl v0.0.0-20141119014638-2f7f44e802e2 // indirect
 	github.com/cloudflare/golibs v0.0.0-20170913112048-333127dbecfc
@@ -54,7 +56,7 @@ require (
 	github.com/prometheus/common v0.7.0 // indirect
 	github.com/prometheus/procfs v0.0.5 // indirect
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5 // indirect
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.6.1
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/xo/dburl v0.0.0-20191005012637-293c3298d6c0
