@@ -11,6 +11,7 @@ import (
 	"github.com/cisco/go-hpke"
 	"io/ioutil"
 	"log"
+	mathrand "math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -32,22 +33,32 @@ type UpstreamHTTPS struct {
 	endpoint   *url.URL
 	bootstraps []string
 	logger     logger.Service
+	protocol   string
+	isProxy    bool
+	odohProxyState *proxyServer
 }
 
 // NewUpstreamHTTPS creates a new DNS over HTTPS upstream from endpoint
-func NewUpstreamHTTPS(endpoint string, bootstraps []string, logger logger.Service) (Upstream, error) {
+func NewUpstreamHTTPS(endpoint string, bootstraps []string, protocol string, isProxy bool, odohProxy *proxyServer, logger logger.Service) (Upstream, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
-	return &UpstreamHTTPS{client: configureClient(u.Hostname()), endpoint: u, bootstraps: bootstraps, logger: logger}, nil
+	return &UpstreamHTTPS{client: configureClient(u.Hostname()), endpoint: u, bootstraps: bootstraps, protocol: protocol, isProxy: isProxy, odohProxyState: odohProxy, logger: logger}, nil
 }
 
 // Exchange provides an implementation for the Upstream interface
-func (u *UpstreamHTTPS) Exchange(ctx context.Context, query *dns.Msg) (*dns.Msg, error) {
+func (u *UpstreamHTTPS) Exchange(ctx context.Context, query *dns.Msg, protocol string) (*dns.Msg, error) {
 	queryBuf, err := query.Pack()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to pack DNS query")
+	}
+	var randomTargetChosen string
+	var targetPublicKey odoh.ObliviousDNSPublicKey
+	if protocol == "ODOH" {
+		randomTargetChosen = u.odohProxyState.targets[mathrand.Intn(len(u.odohProxyState.targets))]
+		log.Printf("%v %v", u.odohProxyState, randomTargetChosen)
+		targetPublicKey = u.odohProxyState.targetKeys[randomTargetChosen]
 	}
 
 	if len(query.Question) > 0 && query.Question[0].Name == fmt.Sprintf("%s.", u.endpoint.Hostname()) {
@@ -57,7 +68,7 @@ func (u *UpstreamHTTPS) Exchange(ctx context.Context, query *dns.Msg) (*dns.Msg,
 				u.logger.Errorf("failed to configure bootstrap upstream %s: %s", bootstrap, err)
 				continue
 			}
-			msg, err := exchange(queryBuf, query.Id, endpoint, client, u.logger)
+			msg, err := exchange(queryBuf, query.Id, endpoint, client, protocol, randomTargetChosen, targetPublicKey, u.logger)
 			if err != nil {
 				u.logger.Errorf("failed to connect to a bootstrap upstream %s: %s", bootstrap, err)
 				continue
@@ -66,8 +77,9 @@ func (u *UpstreamHTTPS) Exchange(ctx context.Context, query *dns.Msg) (*dns.Msg,
 		}
 		return nil, fmt.Errorf("failed to reach any bootstrap upstream: %v", u.bootstraps)
 	}
+	u.logger.Infof("Using non bootstrap value %s", u.endpoint)
 
-	return exchange(queryBuf, query.Id, u.endpoint, u.client, u.logger)
+	return exchange(queryBuf, query.Id, u.endpoint, u.client, protocol, randomTargetChosen, targetPublicKey, u.logger)
 }
 
 const (
@@ -85,7 +97,7 @@ func prepareHttpRequest(serializedBody []byte, useProxy bool, targetIP string, p
 		req, err = http.NewRequest(http.MethodPost, baseurl,  bytes.NewBuffer(serializedBody))
 		queries = req.URL.Query()
 	} else {
-		baseurl = fmt.Sprintf("%s://%s/%s", PROXY_HTTP_MODE, proxy, "proxy")
+		baseurl = proxy
 		req, err = http.NewRequest(http.MethodPost, baseurl,  bytes.NewBuffer(serializedBody))
 		queries = req.URL.Query()
 		queries.Add("targethost", targetIP)
@@ -116,8 +128,6 @@ func prepareOdohQuestion(dnsQuery []byte, key []byte, publicKey odoh.ObliviousDN
 func createOdohQueryResponse(serializedOdohDnsQueryString []byte, useProxy bool, targetIP string, proxy string, client *http.Client) (response *odoh.ObliviousDNSMessage, err error) {
 	req, err := prepareHttpRequest(serializedOdohDnsQueryString, useProxy, targetIP, proxy, OBLIVIOUS_DOH)
 
-	log.Printf("Making a query to %v", req)
-
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -133,7 +143,6 @@ func createOdohQueryResponse(serializedOdohDnsQueryString []byte, useProxy bool,
 		log.Println("Failed to read response body.")
 		log.Fatalln(err)
 	}
-	log.Printf("[HEADER] %v", responseHeader)
 	if responseHeader != OBLIVIOUS_DOH {
 		log.Printf("[WARN] The returned response does not have the %v Content-Type from %v with response %v\n", OBLIVIOUS_DOH, targetIP, string(bodyBytes))
 		return &odoh.ObliviousDNSMessage{
@@ -144,7 +153,7 @@ func createOdohQueryResponse(serializedOdohDnsQueryString []byte, useProxy bool,
 	}
 
 	hexBodyBytes := hex.EncodeToString(bodyBytes)
-	log.Printf("[ODOH] Hex Encrypted Response : %v\n", hexBodyBytes)
+	log.Printf("[ODOH] Hex Encrypted Response : %v %v\n", hexBodyBytes, string(bodyBytes))
 
 	odohQueryResponse, err := odoh.UnmarshalDNSMessage(bodyBytes)
 
@@ -204,7 +213,6 @@ func parseDnsResponse(data []byte) (*dns.Msg, error) {
 }
 
 func RetrievePublicKey(ip string, client *http.Client) (odoh.ObliviousDNSPublicKey, error) {
-	log.Printf("[QUERY] Fetch Public Key from %v", ip)
 	req, err := http.NewRequest(http.MethodGet, "https://" + ip + "/pk", nil)
 	if err != nil {
 		log.Fatalln(err)
@@ -218,30 +226,22 @@ func RetrievePublicKey(ip string, client *http.Client) (odoh.ObliviousDNSPublicK
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("[QUERY] Received Public Key from %v", ip)
 
 	odohPublicKey := odoh.UnMarshalObliviousDNSPublicKey(bodyBytes)
 
 	return odohPublicKey, err
 }
 
-func exchangeOdohWireFormat(msg []byte, endpoint *url.URL, client *http.Client) ([]byte, error) {
+func exchangeOdohWireFormat(msg []byte, endpoint *url.URL, targetChosen string, pkOfChosenTarget odoh.ObliviousDNSPublicKey, client *http.Client) ([]byte, error) {
 	keyChosen := make([]uint8, 16)
 	_, err := rand.Read(keyChosen)
-	log.Printf("Generating Random Value: %v", keyChosen)
-
-	proxyChosen := "alpha-odoh-rs-proxy.research.cloudflare.com" // p.proxies[mathrand.Intn(len(p.proxies))]
-	targetChosen := "odoh-target-dot-odoh-target.wm.r.appspot.com" // p.targets[mathrand.Intn(len(p.targets))]
-	pkOfChosenTarget, err := RetrievePublicKey(targetChosen, client) // p.targetKeys[targetChosen]
 
 	if err != nil {
-		log.Fatalf("Error Fetching Public Key: %v", err)
+		log.Fatalf("Unable to generate random bytes for symmetric key")
 	}
 
-	log.Printf("[PK] : %v\n", pkOfChosenTarget)
-
 	serializedOdohQueryMessage, err := prepareOdohQuestion(msg, keyChosen, pkOfChosenTarget)
-	odohMessage, err := createOdohQueryResponse(serializedOdohQueryMessage, true, targetChosen, proxyChosen, client)
+	odohMessage, err := createOdohQueryResponse(serializedOdohQueryMessage, true, targetChosen, endpoint.String(), client)
 
 	if err != nil {
 		log.Printf("Unable to receive ODOH Response")
@@ -256,11 +256,15 @@ func exchangeOdohWireFormat(msg []byte, endpoint *url.URL, client *http.Client) 
 	return dnsAnswerBytes, nil
 }
 
-func exchange(msg []byte, queryID uint16, endpoint *url.URL, client *http.Client, logger logger.Service) (*dns.Msg, error) {
+func exchange(msg []byte, queryID uint16, endpoint *url.URL, client *http.Client, protocol string, target string, targetPublicKey odoh.ObliviousDNSPublicKey, logger logger.Service) (*dns.Msg, error) {
 	// No content negotiation for now, use DNS wire format
-	//buf, backendErr := exchangeWireformat(msg, endpoint, client)
-	//log.Printf("Making an ODOH Query Now.\n")
-	buf, backendErr := exchangeOdohWireFormat(msg, endpoint, client)
+	var buf []byte
+	var backendErr error
+	if protocol == "ODOH" {
+		buf, backendErr = exchangeOdohWireFormat(msg, endpoint, target, targetPublicKey, client)
+	} else {
+		buf, backendErr = exchangeWireformat(msg, endpoint, client)
+	}
 	if backendErr == nil {
 		response := &dns.Msg{}
 		if err := response.Unpack(buf); err != nil {

@@ -156,6 +156,18 @@ func Commands() []*cli.Command {
 					Value:   cli.NewStringSlice("https://162.159.36.1/dns-query", "https://162.159.46.1/dns-query", "https://[2606:4700:4700::1111]/dns-query", "https://[2606:4700:4700::1001]/dns-query"),
 					EnvVars: []string{"TUNNEL_DNS_BOOTSTRAP"},
 				},
+				&cli.StringFlag{
+					Name: "protocol",
+					Usage: "protocol to use in the proxy. Default: DOH; Choices: [DOH, ODOH].",
+					Value: "DOH",
+					EnvVars: []string{"TUNNEL_DNS_PROTOCOL"},
+				},
+				&cli.StringSliceFlag{
+					Name: "discovery",
+					Usage: "discover new targets and proxies for ODOH using a directory lookup URL",
+					Value: cli.NewStringSlice("https://odoh-discovery.crypto-team.workers.dev/"),
+					EnvVars: []string{"TUNNEL_ODOH_DISCOVERY"},
+				},
 			},
 			ArgsUsage: " ", // can't be the empty string or we get the default output
 			Hidden:    false,
@@ -932,6 +944,19 @@ func tunnelFlags(shouldHide bool) []cli.Flag {
 			Value:   "localhost",
 			EnvVars: []string{"TUNNEL_DNS_ADDRESS"},
 			Hidden:  shouldHide,
+		}),
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name: "proxy-dns-protocol",
+			Usage: "DNS protocol to be used. Default: DOH",
+			Value: "DOH",
+			EnvVars: []string{"TUNNEL_DNS_PROTOCOL"},
+			Hidden: shouldHide,
+		}),
+		altsrc.NewStringSliceFlag(&cli.StringSliceFlag{
+			Name: "proxy-dns-discovery",
+			Usage: "Discovery list for ODOH protocols to use",
+			Value: cli.NewStringSlice("https://odoh-discovery.crypto-team.workers.dev/"),
+			EnvVars: []string{"TUNNEL_ODOH_DISCOVERY"},
 		}),
 		altsrc.NewStringSliceFlag(&cli.StringSliceFlag{
 			Name:    "proxy-dns-upstream",

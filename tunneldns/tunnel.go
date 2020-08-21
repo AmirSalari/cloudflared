@@ -2,11 +2,13 @@ package tunneldns
 
 import (
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/cloudflare/cloudflared/cmd/cloudflared/cliutil"
 	"github.com/cloudflare/cloudflared/cmd/cloudflared/config"
@@ -42,7 +44,10 @@ func Run(c *cli.Context) error {
 
 	go metrics.ServeMetrics(metricsListener, nil, logger)
 
-	listener, err := CreateListener(c.String("address"), uint16(c.Uint("port")), c.StringSlice("upstream"), c.StringSlice("bootstrap"), logger)
+	protocol := c.String("protocol")
+	discoveryURLs := c.StringSlice("discovery")
+
+	listener, err := CreateListener(c.String("address"), uint16(c.Uint("port")), c.StringSlice("upstream"), c.StringSlice("bootstrap"), protocol, discoveryURLs, logger)
 	if err != nil {
 		logger.Errorf("Failed to create the listeners: %s", err)
 		return err
@@ -124,12 +129,39 @@ func (l *Listener) Stop() error {
 }
 
 // CreateListener configures the server and bound sockets
-func CreateListener(address string, port uint16, upstreams []string, bootstraps []string, logger logger.Service) (*Listener, error) {
+func CreateListener(address string, port uint16, upstreams []string, bootstraps []string, protocol string, discoveryURLs []string, logger logger.Service) (*Listener, error) {
+	logger.Infof("DNS Proxy using protocol : %s", protocol)
+	proxyServerInstance := &proxyServer{
+		client:  &http.Client{Transport: &http.Transport{MaxIdleConnsPerHost: 1024, TLSHandshakeTimeout: 0 * time.Second}},
+		targets: nil,
+	}
 	// Build the list of upstreams
 	upstreamList := make([]Upstream, 0)
+	if protocol == "ODOH" {
+		// Perform a lookup from the discovery service and keep the keys ready
+		proxyServerInstance.bootstrap(discoveryURLs, logger)
+		//targets := proxyServerInstance.targets
+		//for _, url := range targets {
+		//	logger.Infof("Adding DNS upstream - url: %s", url)
+		//	upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, false, logger)
+		//	if err != nil {
+		//		return nil, errors.Wrap(err, "failed to create HTTPS upstream")
+		//	}
+		//	upstreamList = append(upstreamList, upstream)
+		//}
+		proxies := proxyServerInstance.proxies
+		for _, url := range proxies {
+			logger.Infof("Adding DNS upstream - url: %s", url)
+			upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, true, proxyServerInstance, logger)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create HTTPS upstream")
+			}
+			upstreamList = append(upstreamList, upstream)
+		}
+	}
 	for _, url := range upstreams {
 		logger.Infof("Adding DNS upstream - url: %s", url)
-		upstream, err := NewUpstreamHTTPS(url, bootstraps, logger)
+		upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, false, proxyServerInstance, logger)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create HTTPS upstream")
 		}
@@ -140,6 +172,8 @@ func CreateListener(address string, port uint16, upstreams []string, bootstraps 
 	chain := cache.New()
 	chain.Next = ProxyPlugin{
 		Upstreams: upstreamList,
+		ProxyUpstreams: *proxyServerInstance,
+		Protocol: protocol,
 	}
 
 	// Format an endpoint

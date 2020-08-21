@@ -52,7 +52,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/beorn7/perks/quantile
 # github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894
 github.com/certifi/gocertifi
-# github.com/chris-wood/odoh v0.0.0-20200713191747-dca7f5ffc0b3
+# github.com/chris-wood/odoh v0.0.0-20200819202825-6f446b923d6d
 github.com/chris-wood/odoh
 # github.com/cisco/go-hpke v0.0.0-20200710171132-37d332d5f613
 github.com/cisco/go-hpke
@@ -217,7 +217,7 @@ github.com/urfave/cli/v2
 github.com/urfave/cli/v2/altsrc
 # github.com/xo/dburl v0.0.0-20191005012637-293c3298d6c0
 github.com/xo/dburl
-# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+# golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
@@ -257,7 +257,7 @@ golang.org/x/oauth2
 golang.org/x/oauth2/internal
 # golang.org/x/sync v0.0.0-20190423024810-112230192c58
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae
+# golang.org/x/sys v0.0.0-20200820212457-1fb795427249
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix

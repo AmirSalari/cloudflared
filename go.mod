@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go v1.25.8
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
-	github.com/chris-wood/odoh v0.0.0-20200713191747-dca7f5ffc0b3
+	github.com/chris-wood/odoh v0.0.0-20200819202825-6f446b923d6d
 	github.com/cisco/go-hpke v0.0.0-20200710171132-37d332d5f613
 	github.com/cloudflare/brotli-go v0.0.0-20191101163834-d34379f7ff93
 	github.com/cloudflare/cfssl v0.0.0-20141119014638-2f7f44e802e2 // indirect
@@ -60,11 +60,11 @@ require (
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/xo/dburl v0.0.0-20191005012637-293c3298d6c0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae
+	golang.org/x/sys v0.0.0-20200820212457-1fb795427249
 	google.golang.org/appengine v1.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect

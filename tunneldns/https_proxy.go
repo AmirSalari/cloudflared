@@ -10,12 +10,14 @@ import (
 
 // Upstream is a simplified interface for proxy destination
 type Upstream interface {
-	Exchange(ctx context.Context, query *dns.Msg) (*dns.Msg, error)
+	Exchange(ctx context.Context, query *dns.Msg, protocol string) (*dns.Msg, error)
 }
 
 // ProxyPlugin is a simplified DNS proxy using a generic upstream interface
 type ProxyPlugin struct {
 	Upstreams []Upstream
+	ProxyUpstreams proxyServer
+	Protocol  string
 	Next      plugin.Handler
 }
 
@@ -25,7 +27,7 @@ func (p ProxyPlugin) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.
 	var backendErr error
 
 	for _, upstream := range p.Upstreams {
-		reply, backendErr = upstream.Exchange(ctx, r)
+		reply, backendErr = upstream.Exchange(ctx, r, p.Protocol)
 		if backendErr == nil {
 			w.WriteMsg(reply)
 			return 0, nil

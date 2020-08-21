@@ -51,7 +51,7 @@ func (s *ResolverService) Shutdown() {
 func (s *ResolverService) Run() error {
 	// create a listener
 	l, err := tunneldns.CreateListener(s.resolver.AddressOrDefault(), s.resolver.PortOrDefault(),
-		s.resolver.UpstreamsOrDefault(), s.resolver.BootstrapsOrDefault(), s.logger)
+		s.resolver.UpstreamsOrDefault(), s.resolver.BootstrapsOrDefault(), s.resolver.Protocol, s.resolver.Discovery, s.logger)
 	if err != nil {
 		return err
 	}

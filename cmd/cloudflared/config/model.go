@@ -30,6 +30,8 @@ type DNSResolver struct {
 	Port       uint16   `json:"port,omitempty"`
 	Upstreams  []string `json:"upstreams,omitempty"`
 	Bootstraps []string `json:"bootstraps,omitempty"`
+	Protocol   string   `json:"protocol,omitempty"`
+	Discovery  []string `json:"discovery,omitempty"`
 }
 
 // Root is the base options to configure the service
