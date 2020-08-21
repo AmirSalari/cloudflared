@@ -35,6 +35,8 @@ github.com/chris-wood/odoh v0.0.0-20200724231530-0ed46d9d2387 h1:4SJlVAvEgzXBDBc
 github.com/chris-wood/odoh v0.0.0-20200724231530-0ed46d9d2387/go.mod h1:uj93pPykgQ+WC/h9KQDNW6o76g2l28stR+UNQEOj1Uc=
 github.com/chris-wood/odoh v0.0.0-20200819202825-6f446b923d6d h1:KQBJo6Ptg1JtUwTjFTAOMnDsonVrVNvtaj/LR+d6NzI=
 github.com/chris-wood/odoh v0.0.0-20200819202825-6f446b923d6d/go.mod h1:uj93pPykgQ+WC/h9KQDNW6o76g2l28stR+UNQEOj1Uc=
+github.com/chris-wood/odoh v0.0.0-20200821163443-e5b5769b341f h1:d9JY7qGFv3QKdW1+qFxkzsqrQJXh2//GPBg//xtl7Vg=
+github.com/chris-wood/odoh v0.0.0-20200821163443-e5b5769b341f/go.mod h1:uj93pPykgQ+WC/h9KQDNW6o76g2l28stR+UNQEOj1Uc=
 github.com/cisco/go-hpke v0.0.0-20200710171132-37d332d5f613 h1:u9M24d+jQHVN+NfFmEaprJgqPIgJCYvBenR1T216ep0=
 github.com/cisco/go-hpke v0.0.0-20200710171132-37d332d5f613/go.mod h1:7ykSQZaBVJLIRoJ7OMiJgpdOD74cTHdXRo6XPMIfu20=
 github.com/cisco/go-hpke v0.0.0-20200820201318-6d3e6477c711 h1:yAaOc47zNT0GWFMDyxEVCszqXaidYrsBqrJtghjZRIY=

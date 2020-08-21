@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go v1.25.8
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
-	github.com/chris-wood/odoh v0.0.0-20200819202825-6f446b923d6d
+	github.com/chris-wood/odoh v0.0.0-20200821163443-e5b5769b341f
 	github.com/cisco/go-hpke v0.0.0-20200710171132-37d332d5f613
 	github.com/cloudflare/brotli-go v0.0.0-20191101163834-d34379f7ff93
 	github.com/cloudflare/cfssl v0.0.0-20141119014638-2f7f44e802e2 // indirect
