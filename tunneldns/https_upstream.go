@@ -74,7 +74,7 @@ func (u *UpstreamHTTPS) Exchange(ctx context.Context, query *dns.Msg, protocol s
 		}
 		return nil, fmt.Errorf("failed to reach any bootstrap upstream: %v", u.bootstraps)
 	}
-	u.logger.Infof("Using non bootstrap value %s", u.endpoint)
+	u.logger.Infof("Using non bootstrap value %s with client %p", u.endpoint, &u.client)
 
 	return exchange(queryBuf, query.Id, u.endpoint, u.client, protocol, randomTargetChosen, targetPublicKey, u.logger)
 }
@@ -186,13 +186,13 @@ func exchangeOdohWireFormat(msg []byte, endpoint *url.URL, targetChosen string, 
 	}
 
 	dnsAnswer, err := queryContext.OpenAnswer(odohMessage.EncryptedMessage)
-	dnsBytes, err := parseDnsResponse(dnsAnswer)
-	if err != nil || dnsAnswer == nil {
-		log.Printf("Unable to retrieve a correct DNS Answer")
-		return nil, err
-	}
-	dnsAnswerBytes, err := dnsBytes.Pack()
-	return dnsAnswerBytes, nil
+	//dnsBytes, err := parseDnsResponse(dnsAnswer)
+	//if err != nil || dnsAnswer == nil {
+	//	log.Printf("Unable to retrieve a correct DNS Answer")
+	//	return nil, err
+	//}
+	//dnsAnswerBytes, err := dnsBytes.Pack()
+	return dnsAnswer, nil
 }
 
 func exchange(msg []byte, queryID uint16, endpoint *url.URL, client *http.Client, protocol string, target string, targetPublicKey odoh.ObliviousDNSPublicKey, logger logger.Service) (*dns.Msg, error) {
@@ -267,8 +267,10 @@ func configureClient(hostname string) *http.Client {
 	tls := &tls.Config{ServerName: hostname}
 	transport := &http.Transport{
 		TLSClientConfig:    tls,
-		DisableCompression: true,
-		MaxIdleConns:       1,
+		//DisableCompression: true,
+		MaxIdleConns:       1024,
+		MaxIdleConnsPerHost: 1024,
+		TLSHandshakeTimeout: 0 * time.Second,
 		Proxy:              http.ProxyFromEnvironment,
 	}
 	http2.ConfigureTransport(transport)
