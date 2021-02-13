@@ -2,7 +2,6 @@ package tunneldns
 
 import (
 	"context"
-
 	"github.com/coredns/coredns/plugin"
 	"github.com/miekg/dns"
 	"github.com/pkg/errors"

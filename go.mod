@@ -3,7 +3,6 @@ module github.com/cloudflare/cloudflared
 go 1.12
 
 require (
-	github.com/BurntSushi/go-sumtype v0.0.0-20190304192233-fcb4a6205bdc // indirect
 	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/acmacalister/skittles v0.0.0-20160609003031-7423546701e1
 	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
@@ -11,11 +10,10 @@ require (
 	github.com/aws/aws-sdk-go v1.25.8
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
-	github.com/chris-wood/odoh v0.0.0-20200821163443-e5b5769b341f
-	github.com/cisco/go-hpke v0.0.0-20200710171132-37d332d5f613
+	github.com/cisco/go-hpke v0.0.0-20201215202025-9cebdf8f33d4 // indirect
 	github.com/cloudflare/brotli-go v0.0.0-20191101163834-d34379f7ff93
-	github.com/cloudflare/cfssl v0.0.0-20141119014638-2f7f44e802e2 // indirect
 	github.com/cloudflare/golibs v0.0.0-20170913112048-333127dbecfc
+	github.com/cloudflare/odoh-go v0.1.4
 	github.com/coredns/coredns v1.2.0
 	github.com/coreos/go-oidc v0.0.0-20171002155002-a93f71fdfe73
 	github.com/coreos/go-systemd v0.0.0-20190620071333-e64a0ec8b42a
@@ -37,15 +35,12 @@ require (
 	github.com/gorilla/websocket v1.4.0
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645 // indirect
 	github.com/jmoiron/sqlx v1.2.0
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kshvakov/clickhouse v1.3.11
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lib/pq v1.2.0
-	github.com/mattn/go-colorable v0.1.4 // indirect
-	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mholt/caddy v0.0.0-20180807230124-d3b731e9255b // indirect
-	github.com/miekg/dns v1.1.27
+	github.com/miekg/dns v1.1.38
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
@@ -55,22 +50,20 @@ require (
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/prometheus/common v0.7.0 // indirect
 	github.com/prometheus/procfs v0.0.5 // indirect
-	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/xo/dburl v0.0.0-20191005012637-293c3298d6c0
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/sys v0.0.0-20200820212457-1fb795427249
+	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
 	google.golang.org/appengine v1.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/coreos/go-oidc.v2 v2.1.0
 	gopkg.in/square/go-jose.v2 v2.4.0 // indirect
-	gopkg.in/urfave/cli.v2 v2.0.0-20180128181224-d604b6ffeee8 // indirect
 	gopkg.in/yaml.v2 v2.2.4
 	zombiezen.com/go/capnproto2 v2.18.0+incompatible
 )

@@ -1,6 +1,7 @@
 package tunneldns
 
 import (
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -140,33 +141,35 @@ func CreateListener(address string, port uint16, upstreams []string, bootstraps 
 	if protocol == "ODOH" {
 		// Perform a lookup from the discovery service and keep the keys ready
 		proxyServerInstance.bootstrap(discoveryURLs, logger)
-		//targets := proxyServerInstance.targets
-		//for _, url := range targets {
-		//	logger.Infof("Adding DNS upstream - url: %s", url)
-		//	upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, false, logger)
-		//	if err != nil {
-		//		return nil, errors.Wrap(err, "failed to create HTTPS upstream")
-		//	}
-		//	upstreamList = append(upstreamList, upstream)
-		//}
-		proxies := proxyServerInstance.proxies
-		for _, url := range proxies {
+		targets := proxyServerInstance.targets
+		log.Printf("Targets : %v", targets)
+		for _, url := range targets {
 			logger.Infof("Adding DNS upstream - url: %s", url)
-			upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, true, proxyServerInstance, logger)
+			upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, false, proxyServerInstance, logger)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to create HTTPS upstream")
 			}
 			upstreamList = append(upstreamList, upstream)
 		}
+		proxies := proxyServerInstance.proxies
+		log.Printf("Proxies : %v", proxies)
+		//for _, url := range proxies {
+		//	logger.Infof("Adding DNS upstream - url: %s", url)
+		//	upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, true, proxyServerInstance, logger)
+		//	if err != nil {
+		//		return nil, errors.Wrap(err, "failed to create HTTPS upstream")
+		//	}
+		//	upstreamList = append(upstreamList, upstream)
+		//}
 	}
-	for _, url := range upstreams {
-		logger.Infof("Adding DNS upstream - url: %s", url)
-		upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, false, proxyServerInstance, logger)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create HTTPS upstream")
-		}
-		upstreamList = append(upstreamList, upstream)
-	}
+	//for _, url := range upstreams {
+	//	logger.Infof("Adding DNS upstream - url: %s", url)
+	//	upstream, err := NewUpstreamHTTPS(url, bootstraps, protocol, false, proxyServerInstance, logger)
+	//	if err != nil {
+	//		return nil, errors.Wrap(err, "failed to create HTTPS upstream")
+	//	}
+	//	upstreamList = append(upstreamList, upstream)
+	//}
 
 	// Create a local cache with HTTPS proxy plugin
 	chain := cache.New()

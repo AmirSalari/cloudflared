@@ -4,41 +4,45 @@ import textwrap
 
 ordered_keys = [
     # Mode and ciphersuite parameters
-    "mode", "kemID", "kdfID", "aeadID", "info",
+    "mode", "kem_id", "kdf_id", "aead_id", "info",
     # Private key material
-    "seedE", "pkE", "skE",
-    "seedR", "pkR", "skR",
-    "seedS", "pkS", "skS",
-    "psk", "pskID",
+    "ikmE", "pkEm", "skEm",
+    "ikmR", "pkRm", "skRm",
+    "ikmS", "pkSm", "skSm",
+    "psk", "psk_id",
     # Derived context
-    "enc", "zz", "keyScheduleContext", "secret", "key", "nonce", "exporterSecret",
+    "enc", "shared_secret", "key_schedule_context", "secret", "key", "base_nonce", "exporter_secret",
 ]
 
 ordered_encryption_keys = [
     "plaintext", "aad", "nonce", "ciphertext",
 ]
 
+ordered_export_keys = [
+    "exporter_context", "L", "exported_value"
+]
+
 encryption_count_keys = [
-    0, 1, 2, 4, 10, 32, 255, 256, 257
+    0, 1, 2, 4, 255, 256,
 ]
 
 def entry_kem(entry):
-    return kemMap[entry["kemID"]]
+    return kemMap[entry["kem_id"]]
 
 def entry_kem_value(entry):
-    return entry["kemID"]
+    return entry["kem_id"]
 
 def entry_kdf(entry):
-    return kdfMap[entry["kdfID"]]
+    return kdfMap[entry["kdf_id"]]
 
 def entry_kdf_value(entry):
-    return entry["kdfID"]
+    return entry["kdf_id"]
 
 def entry_aead(entry):
-    return aeadMap[entry["aeadID"]]
+    return aeadMap[entry["aead_id"]]
 
 def entry_aead_value(entry):
-    return entry["aeadID"]
+    return entry["aead_id"]
 
 def entry_mode(entry):
     return modeMap[entry["mode"]]
@@ -50,43 +54,63 @@ modeBase = 0x00
 modePSK = 0x01
 modeAuth = 0x02
 modeAuthPSK = 0x03
-modeMap = {modeBase: "Base", modePSK: "PSK", modeAuth: "Auth", modeAuthPSK: "AuthPSK"}
+modeMap = {
+    modeBase: "Base", 
+    modePSK: "PSK", 
+    modeAuth: "Auth", 
+    modeAuthPSK: "AuthPSK"
+}
 
-kemIDP256 = 0x0010
-kemIDP521 = 0x0012
-kemIDCurve25519 = 0x0020
-kemMap = {kemIDCurve25519: "DHKEM(Curve25519, HKDF-SHA256)", kemIDP256: "DHKEM(P-256, HKDF-SHA256)", kemIDP521: "DHKEM(P-521, HKDF-SHA512)"}
+kem_idP256 = 0x0010
+kem_idP521 = 0x0012
+kem_idX25519 = 0x0020
+kemMap = {
+    kem_idX25519: "DHKEM(X25519, HKDF-SHA256)", 
+    kem_idP256: "DHKEM(P-256, HKDF-SHA256)", 
+    kem_idP521: "DHKEM(P-521, HKDF-SHA512)"
+}
 
-kdfIDSHA256 = 0x0001
-kdfIDSHA512 = 0x0003
-kdfMap = {kdfIDSHA256: "HKDF-SHA256", kdfIDSHA512: "HKDF-SHA512"}
+kdf_idSHA256 = 0x0001
+kdf_idSHA512 = 0x0003
+kdfMap = {
+    kdf_idSHA256: "HKDF-SHA256", 
+    kdf_idSHA512: "HKDF-SHA512"
+}
 
-aeadIDAESGCM128 = 0x0001
-aeadIDAESGCM256 = 0x0002
-aeadIDChaCha20Poly1305 = 0x0003
-aeadMap = {aeadIDAESGCM128: "AES-GCM-128", aeadIDAESGCM256: "AES-GCM-256", aeadIDChaCha20Poly1305: "ChaCha20Poly1305"}
+aead_idAES128GCM = 0x0001
+aead_idAES256GCM = 0x0002
+aead_idChaCha20Poly1305 = 0x0003
+aead_idExportOnly = 0xFFFF
+aeadMap = {
+    aead_idAES128GCM: "AES-128-GCM", 
+    aead_idAES256GCM: "AES-256-GCM", 
+    aead_idChaCha20Poly1305: "ChaCha20Poly1305", 
+    aead_idExportOnly: "Export-Only AEAD"
+}
 
 class CipherSuite(object):
-    def __init__(self, kemID, kdfID, aeadID):
-        self.kemID = kemID
-        self.kdfID = kdfID
-        self.aeadID = aeadID
+    def __init__(self, kem_id, kdf_id, aead_id):
+        self.kem_id = kem_id
+        self.kdf_id = kdf_id
+        self.aead_id = aead_id
 
     def __str__(self):
-        return kemMap[self.kemID] + ", " + kdfMap[self.kdfID] + ", " + aeadMap[self.aeadID]
+        return kemMap[self.kem_id] + ", " + kdfMap[self.kdf_id] + ", " + aeadMap[self.aead_id]
 
     def __repr__(self):
         return str(self)
 
     def matches_vector(self, vector):
-        return self.kemID == entry_kem_value(vector) and self.kdfID == entry_kdf_value(vector) and self.aeadID == entry_aead_value(vector)
+        return self.kem_id == entry_kem_value(vector) and self.kdf_id == entry_kdf_value(vector) and self.aead_id == entry_aead_value(vector)
 
 testSuites = [
-    CipherSuite(kemIDCurve25519, kdfIDSHA256, aeadIDAESGCM128),
-    CipherSuite(kemIDCurve25519, kdfIDSHA256, aeadIDChaCha20Poly1305),
-    CipherSuite(kemIDP256, kdfIDSHA256, aeadIDAESGCM128),
-    CipherSuite(kemIDP256, kdfIDSHA256, aeadIDChaCha20Poly1305),
-    CipherSuite(kemIDP521, kdfIDSHA512, aeadIDAESGCM256),
+    CipherSuite(kem_idX25519, kdf_idSHA256, aead_idAES128GCM),
+    CipherSuite(kem_idX25519, kdf_idSHA256, aead_idChaCha20Poly1305),
+    CipherSuite(kem_idP256, kdf_idSHA256, aead_idAES128GCM),
+    CipherSuite(kem_idP256, kdf_idSHA512, aead_idAES128GCM),
+    CipherSuite(kem_idP256, kdf_idSHA256, aead_idChaCha20Poly1305),
+    CipherSuite(kem_idP521, kdf_idSHA512, aead_idAES256GCM),
+    CipherSuite(kem_idX25519, kdf_idSHA256, aead_idExportOnly),
 ]
 
 def wrap_line(value):
@@ -105,8 +129,23 @@ def format_encryptions(entry, mode):
         for i, encryption in enumerate(entry["encryptions"]):
             if i == seq_number:
                 formatted = formatted + format_encryption(encryption, i)
-                if i < len(entry["encryptions"]) - 1:
+                if i < max(encryption_count_keys):
                     formatted = formatted + "\n"
+    return formatted + "~~~"
+
+def format_export(entry):
+    formatted = ""
+    for key in ordered_export_keys:
+        if key in entry:
+            formatted = formatted + wrap_line(key + ": " + str(entry[key])) + "\n"
+    return formatted
+
+def format_exports(entry):
+    formatted = "~~~\n"
+    for i, export in enumerate(entry["exports"]):
+        formatted = formatted + format_export(export)
+        if i < len(entry["exports"]) - 1:
+            formatted = formatted + "\n"
     return formatted + "~~~"
 
 def format_vector(entry, mode):
@@ -127,6 +166,11 @@ with open(sys.argv[1], "r") as fh:
                     if mode == entry_mode_value(vector):
                         print("### " + modeMap[mode] + " Setup Information")
                         print(format_vector(vector, mode))
-                        print("#### Encryptions")
-                        print(format_encryptions(vector, mode))
+                        if "encryptions" in vector and len(vector["encryptions"]) > 0:
+                            print("#### Encryptions")
+                            print(format_encryptions(vector, mode))
+                            print("")
+                        print("#### Exported Values")
+                        print(format_exports(vector))
                         print("")
+                        
