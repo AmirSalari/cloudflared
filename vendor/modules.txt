@@ -52,7 +52,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/beorn7/perks/quantile
 # github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894
 github.com/certifi/gocertifi
-# github.com/cisco/go-hpke v0.0.0-20201215202025-9cebdf8f33d4
+# github.com/cisco/go-hpke v0.0.0-20210215210317-01c430f1f302
 github.com/cisco/go-hpke
 # github.com/cisco/go-tls-syntax v0.0.0-20200617162716-46b0cfb76b9b
 github.com/cisco/go-tls-syntax
@@ -72,7 +72,7 @@ github.com/cloudflare/circl/dh/sidh/internal/shake
 github.com/cloudflare/golibs/lrucache
 # github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58
 github.com/cloudflare/golz4
-# github.com/cloudflare/odoh-go v0.1.4
+# github.com/cloudflare/odoh-go v1.0.0
 github.com/cloudflare/odoh-go
 # github.com/coredns/coredns v1.2.0
 github.com/coredns/coredns/core/dnsserver
@@ -217,7 +217,7 @@ github.com/urfave/cli/v2
 github.com/urfave/cli/v2/altsrc
 # github.com/xo/dburl v0.0.0-20191005012637-293c3298d6c0
 github.com/xo/dburl
-# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+# golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
@@ -257,7 +257,7 @@ golang.org/x/oauth2
 golang.org/x/oauth2/internal
 # golang.org/x/sync v0.0.0-20190423024810-112230192c58
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
+# golang.org/x/sys v0.0.0-20210220050731-9a76102bfb43
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9

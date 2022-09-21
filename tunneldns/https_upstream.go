@@ -27,12 +27,12 @@ const (
 
 // UpstreamHTTPS is the upstream implementation for DNS over HTTPS service
 type UpstreamHTTPS struct {
-	client     *http.Client
-	endpoint   *url.URL
-	bootstraps []string
-	logger     logger.Service
-	protocol   string
-	isProxy    bool
+	client         *http.Client
+	endpoint       *url.URL
+	bootstraps     []string
+	logger         logger.Service
+	protocol       string
+	isProxy        bool
 	odohProxyState *proxyServer
 }
 
@@ -58,7 +58,7 @@ func (u *UpstreamHTTPS) Exchange(ctx context.Context, query *dns.Msg, protocol s
 		proxy = u.odohProxyState.proxies[mathrand.Intn(len(u.odohProxyState.proxies))]
 		randomTargetChosen = u.odohProxyState.targets[mathrand.Intn(len(u.odohProxyState.targets))]
 		targetConfigContents = u.odohProxyState.targetKeys[randomTargetChosen]
-		log.Printf("Choosing %v and %v Proxy-Target pair",  proxy, randomTargetChosen)
+		log.Printf("Choosing %v and %v Proxy-Target pair", proxy, randomTargetChosen)
 	}
 
 	//if len(query.Question) > 0 && query.Question[0].Name == fmt.Sprintf("%s.", u.endpoint.Hostname()) {
@@ -246,10 +246,11 @@ func fetchTargetConfigsFromDNS(targetName string) (odoh.ObliviousDoHConfigs, err
 }
 
 func fetchTargetConfigs(targetName string) (odoh.ObliviousDoHConfigs, error) {
-	odohConfigs, err := fetchTargetConfigsFromDNS(targetName)
-	if err == nil {
-		return odohConfigs, err
-	}
+	//odohConfigs, err := fetchTargetConfigsFromDNS(targetName)
+	//if err == nil {
+	//	fmt.Printf("%v\n", odohConfigs)
+	//	return odohConfigs, err
+	//}
 
 	// Fall back to the well-known endpoint if we can't read from DNS
 	return fetchTargetConfigsFromWellKnown(targetName)
@@ -314,7 +315,6 @@ func resolveObliviousQuery(query odoh.ObliviousDNSMessage, useProxy bool, target
 
 	return odohQueryResponse, nil
 }
-
 
 func validateEncryptedResponse(message odoh.ObliviousDNSMessage, queryContext odoh.QueryContext) (response []byte, err error) {
 	decryptedResponse, err := queryContext.OpenAnswer(message)
@@ -428,10 +428,10 @@ func configureClient(hostname string) *http.Client {
 	transport := &http.Transport{
 		//TLSClientConfig:    tls,
 		//DisableCompression: true,
-		MaxIdleConns:       1024,
+		MaxIdleConns:        1024,
 		MaxIdleConnsPerHost: 1024,
 		TLSHandshakeTimeout: 0 * time.Second,
-		Proxy:              http.ProxyFromEnvironment,
+		Proxy:               http.ProxyFromEnvironment,
 	}
 	http2.ConfigureTransport(transport)
 

@@ -2,18 +2,17 @@ package tunneldns
 
 import (
 	"encoding/json"
-	"fmt"
-	odoh "github.com/cloudflare/odoh-go"
 	"github.com/cloudflare/cloudflared/logger"
+	odoh "github.com/cloudflare/odoh-go"
 	"log"
 	"net/http"
 )
 
 type proxyServer struct {
-	client *http.Client
+	client     *http.Client
 	targetKeys map[string]odoh.ObliviousDoHConfigContents
-	proxies []string
-	targets []string
+	proxies    []string
+	targets    []string
 }
 
 type DiscoveryServiceResponse struct {
@@ -42,38 +41,57 @@ func DiscoverProxiesAndTargets(hostname string, client *http.Client) (response D
 }
 
 func (p *proxyServer) bootstrap(discoveryURLs []string, logger logger.Service) {
-	log.Printf("Discovery URL: %v", discoveryURLs)
 	p.targets = make([]string, 0)
 	p.proxies = make([]string, 0)
 	p.targetKeys = make(map[string]odoh.ObliviousDoHConfigContents)
-	for _, discoveryService := range discoveryURLs {
-		availableServices, err := DiscoverProxiesAndTargets(discoveryService, p.client)
+
+	p.targets = append(p.targets, "odoh.cloudflare-dns.com")
+	p.proxies = append(p.proxies, "localhost:8080")
+
+	for _, target := range p.targets {
+		configs, err := fetchTargetConfigs(target)
 		if err != nil {
-			logger.Error("Unable to discover ODOH Targets/Proxies")
+			logger.Fatalf("Unable to obtain the public Key from %v. Error %v", target, err)
 		}
-		for _, proxy := range availableServices.Proxies {
-			proxyUrl := fmt.Sprintf("%s", proxy)
-			p.proxies = append(p.proxies, proxyUrl)
+		if len(configs.Configs) == 0 {
+			logger.Fatalf("No configuration obtained for the target  %v", target)
 		}
-		if err != nil {
-			logger.Fatalf("Unable to discover the services available.")
-		}
-		// Obtain all the keys for the targets.
-		targets := availableServices.Targets
-		for _, target := range targets {
-			configs, err := fetchTargetConfigs(target)
-			if err != nil {
-				logger.Fatalf("Unable to obtain the public Key from %v. Error %v", target, err)
-			}
-			if len(configs.Configs) == 0 {
-				logger.Fatalf("No configuration obtained for the target  %v", target)
-			}
-			config := configs.Configs[0]
-			logger.Infof("Adding ODOH Target - url: %s", target)
-			//targetUrl := fmt.Sprintf("https://%s/dns-query", target)
-			p.targets = append(p.targets, target)
-			p.targetKeys[target] = config.Contents
-			logger.Infof("Target [%v] ConfigContents : %v", target, config.Contents)
-		}
+		config := configs.Configs[0]
+		logger.Infof("Adding ODOH Target - url: %s", target)
+		//targetUrl := fmt.Sprintf("https://%s/dns-query", target)
+		p.targets = append(p.targets, target)
+		p.targetKeys[target] = config.Contents
+		logger.Infof("Target [%v] ConfigContents : %v", target, config.Contents)
 	}
+
+	//for _, discoveryService := range discoveryURLs {
+	//	availableServices, err := DiscoverProxiesAndTargets(discoveryService, p.client)
+	//	if err != nil {
+	//		logger.Error("Unable to discover ODOH Targets/Proxies")
+	//	}
+	//	for _, proxy := range availableServices.Proxies {
+	//		proxyUrl := fmt.Sprintf("%s", proxy)
+	//		p.proxies = append(p.proxies, proxyUrl)
+	//	}
+	//	if err != nil {
+	//		logger.Fatalf("Unable to discover the services available.")
+	//	}
+	//	// Obtain all the keys for the targets.
+	//	targets := availableServices.Targets
+	//	for _, target := range targets {
+	//		configs, err := fetchTargetConfigs(target)
+	//		if err != nil {
+	//			logger.Fatalf("Unable to obtain the public Key from %v. Error %v", target, err)
+	//		}
+	//		if len(configs.Configs) == 0 {
+	//			logger.Fatalf("No configuration obtained for the target  %v", target)
+	//		}
+	//		config := configs.Configs[0]
+	//		logger.Infof("Adding ODOH Target - url: %s", target)
+	//		//targetUrl := fmt.Sprintf("https://%s/dns-query", target)
+	//		p.targets = append(p.targets, target)
+	//		p.targetKeys[target] = config.Contents
+	//		logger.Infof("Target [%v] ConfigContents : %v", target, config.Contents)
+	//	}
+	//}
 }
