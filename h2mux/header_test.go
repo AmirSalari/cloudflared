@@ -1,6 +1,7 @@
 package h2mux
 
 import (
+	"strconv"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -380,7 +381,8 @@ func randomASCIIText(rand *rand.Rand, minLength int, maxLength int) string {
 		if c == '%' || rand.Intn(4) == 0 {
 			result += fmt.Sprintf("%%%02X", c)
 		} else {
-			result += string(c)
+			//result += fmt.Sprintf((c)
+			result += strconv.Itoa(c)
 		}
 	}
 	return result
