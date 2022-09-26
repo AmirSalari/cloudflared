@@ -45,8 +45,8 @@ func (p *proxyServer) bootstrap(discoveryURLs []string, logger logger.Service) {
 	p.proxies = make([]string, 0)
 	p.targetKeys = make(map[string]odoh.ObliviousDoHConfigContents)
 
-	p.targets = append(p.targets, "odoh.cloudflare-dns.com")
-	p.proxies = append(p.proxies, "localhost:8080")
+	p.targets = append(p.targets, "204.102.244.58:2223")
+	p.proxies = append(p.proxies, "192.122.236.103:1115")
 
 	for _, target := range p.targets {
 		configs, err := fetchTargetConfigs(target)
