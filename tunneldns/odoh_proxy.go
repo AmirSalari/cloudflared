@@ -2,10 +2,11 @@ package tunneldns
 
 import (
 	"encoding/json"
-	"github.com/cloudflare/cloudflared/logger"
-	odoh "github.com/cloudflare/odoh-go"
 	"log"
 	"net/http"
+
+	"github.com/cloudflare/cloudflared/logger"
+	odoh "github.com/cloudflare/odoh-go"
 )
 
 type proxyServer struct {
@@ -45,8 +46,13 @@ func (p *proxyServer) bootstrap(discoveryURLs []string, logger logger.Service) {
 	p.proxies = make([]string, 0)
 	p.targetKeys = make(map[string]odoh.ObliviousDoHConfigContents)
 
-	p.targets = append(p.targets, "204.102.244.58:2223")
-	p.proxies = append(p.proxies, "192.122.236.103:1115")
+	// p.targets = append(p.targets, "164.67.126.40:8110")
+	// p.proxies = append(p.proxies, "164.67.126.39:8110")
+	// p.targets = append(p.proxies, "192.122.236.103:1115")
+	p.targets = append(p.proxies, "204.102.244.58:2223")
+	p.proxies = append(p.targets, "204.102.244.58:2223")
+	// p.targets = append(p.targets, "odoh.cloudflare-dns.com")
+	// p.proxies = append(p.proxies, "odoh1.surfdomeinen.nl")
 
 	for _, target := range p.targets {
 		configs, err := fetchTargetConfigs(target)
